@@ -4,9 +4,10 @@ from random import randint, choice
 
 class EmailValidator:
     CHARS = ascii_letters + digits + '_' + '.'
+
     def __new__(cls):
         return None
-    
+
     @classmethod
     def get_random_email(cls):
         email = ''
@@ -33,7 +34,7 @@ class EmailValidator:
         ):
             return True
         return False
-    
+
     @classmethod
     def __check_dot(cls, email):
         dot_fount = False
@@ -45,7 +46,7 @@ class EmailValidator:
             elif elem == '.':
                 dot_fount = True
         return True
-    
+
     @staticmethod
     def __is_email_str(email):
         return isinstance(email, str)
