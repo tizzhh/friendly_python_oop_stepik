@@ -36,7 +36,12 @@ class GamePole:
         for x in range(-1, 2):
             for y in range(-1, 2):
                 new_x, new_y = i + x, j + y
-                if new_x < 0 or new_y < 0 or new_x >= self.N or new_y >= self.N:
+                if (
+                    new_x < 0
+                    or new_y < 0
+                    or new_x >= self.N
+                    or new_y >= self.N
+                ):
                     continue
                 if self.pole[new_x][new_y].mine:
                     count += 1

@@ -10,14 +10,18 @@ class Goods:
 class Table(Goods):
     ...
 
+
 class TV(Goods):
     ...
+
 
 class Notebook(Goods):
     ...
 
+
 class Cup(Goods):
     ...
+
 
 class Cart:
     def __init__(self) -> None:
@@ -30,15 +34,14 @@ class Cart:
         self.goods.pop(indx)
 
     def get_list(self):
-        return [
-            str(gd) for gd in self.goods
-        ]
-    
+        return [str(gd) for gd in self.goods]
+
+
 cart = Cart()
 tv1 = TV("samsung", 1111)
 tv2 = TV("LG", 1234)
 table = Table("ikea", 2345)
-n1= Notebook("msi", 5433)
+n1 = Notebook("msi", 5433)
 n2 = Notebook("apple", 542)
 c = Cup("keepcup", 43)
 

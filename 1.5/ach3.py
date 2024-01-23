@@ -4,6 +4,7 @@ class Point:
         self.y = y
         self.color = color
 
+
 points = []
 for i in range(1, 2001, 2):
     points.append(Point(i, i))
