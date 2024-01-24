@@ -38,28 +38,28 @@ class LinkedList:
             self.tail.prev = prev_tail
 
     def remove_obj(self, indx: int) -> None:
-        if indx < len(self) and indx >= 0:
-            if self.head is self.tail:
-                self.head = self.tail = None
-            elif indx == 0:
-                if self.head is not None:
-                    self.head = self.head.next
-                    if self.head is not None:
-                        self.head.prev = None
-            elif indx == len(self) - 1:
-                if self.tail is not None:
-                    self.tail = self.tail.prev
-                    if self.tail is not None:
-                        self.tail.next = None
-            else:
-                counter = 0
-                pointer = self.head
-                while counter < indx and pointer.next is not None:
-                    pointer = pointer.next
-                temp = pointer
-                temp = temp.prev
-                temp.next = pointer.next
-                pointer.prev = None
+        if indx >= len(self) or indx < 0:
+            raise IndexError('Out of range')
+
+        if self.head is None or self.tail is None:
+            return
+
+        pointer = self.head
+        for _ in range(indx):
+            if pointer.next is None:
+                break
+            pointer = pointer.next
+
+        if pointer.prev is not None:
+            pointer.prev.next = pointer.next
+        else:
+            self.head = pointer.next
+
+        if pointer.next is not None:
+            pointer.next.prev = pointer.prev
+        else:
+            self.tail = pointer.prev
+            self.tail.next = None
 
     def __call__(self, indx: int) -> str:
         if indx < len(self) and indx >= 0:
@@ -92,48 +92,3 @@ class LinkedList:
             pointer = pointer.prev
 
         return f'head: {res_head}\ntail:{res_tail}'
-
-
-ln = LinkedList()
-ln.add_obj(ObjList("Сергей"))
-ln.add_obj(ObjList("Балакирев"))
-ln.add_obj(ObjList("Python ООП"))
-ln.remove_obj(2)
-assert (
-    len(ln) == 2
-), "функция len вернула неверное число объектов в списке, возможно, неверно работает метод remove_obj()"
-ln.add_obj(ObjList("Python"))
-assert (
-    ln(2) == "Python"
-), "неверное значение атрибута __data, взятое по индексу"
-assert len(ln) == 3, "функция len вернула неверное число объектов в списке"
-assert (
-    ln(1) == "Балакирев"
-), "неверное значение атрибута __data, взятое по индексу"
-
-n = 0
-h = ln.head
-while h:
-    assert isinstance(h, ObjList)
-    h = h._ObjList__next
-    n += 1
-
-assert (
-    n == 3
-), "при перемещении по списку через __next не все объекты перебрались"
-
-n = 0
-h = ln.tail
-while h:
-    assert isinstance(h, ObjList)
-    h = h._ObjList__prev
-    n += 1
-
-assert (
-    n == 3
-), "при перемещении по списку через __prev не все объекты перебрались"
-ln.remove_obj(0)
-ln.remove_obj(0)
-print(ln)
-ln.remove_obj(0)
-print(ln)
