@@ -1,5 +1,5 @@
+from random import choice, randint
 from string import ascii_letters, digits
-from random import randint, choice
 
 
 class EmailValidator:
