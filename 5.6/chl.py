@@ -262,14 +262,16 @@ class SeaBattle:
 
     def start(self) -> None:
         self.player.init()
-        self.enemy.init(hidden=True)
+        self.enemy.init(hidden=False)
 
     def user_turn(self) -> None:
-        inp = input('Input enemy coordinates: ').split()
-        try:
-            x, y = map(int, inp)
-        except ValueError:
-            raise ValueError('Coordinates should be int and only 2')
+        while True:
+            try:
+                x, y = map(int, input('Input enemy coordinates: ').split())
+            except ValueError:
+                print('Coordinates should be int and only 2')
+            else:
+                break
         coord = (x, y)
         for ship in self.enemy.ships:
             if coord in ship.ship_coords:
