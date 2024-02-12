@@ -1,5 +1,5 @@
-from random import randint, choice
-from typing import Callable, List, Set, Tuple, Union
+from random import choice, randint
+from typing import Callable, List, Set, Tuple
 
 
 class Ship:
@@ -70,9 +70,8 @@ class Ship:
         self._all_coords = self._get_all_coords()
 
     def is_collide(self, ship: 'Ship') -> bool:
-        return (
-            self != ship
-            and bool(set(self._all_coords) & set(ship._ship_cords))
+        return self != ship and (
+            bool(set(self._all_coords) & set(ship._ship_cords))
             or bool(set(self._ship_cords) & set(ship._all_coords))
         )
 
@@ -158,7 +157,7 @@ class GamePole:
                 if not does_collide:
                     set_coords.append((new_x, new_y))
 
-        self._pole = self._get_pole()
+        self._pole = self._get_grid()
 
     def move_ships(self) -> None:
         for ship in self._ships:
@@ -177,7 +176,7 @@ class GamePole:
                 ):
                     ship.move(step)
 
-        self._pole = self._get_pole()
+        self._pole = self._get_grid()
 
     def show(self) -> None:
         for row in self._pole:
@@ -185,7 +184,7 @@ class GamePole:
                 print(self.CELLS[cell], end='')
             print()
 
-    def _get_pole(self) -> List[List[int]]:
+    def _get_grid(self) -> List[List[int]]:
         grid = [
             [Ship.WATER for _ in range(self._sixe)] for _ in range(self._sixe)
         ]
@@ -202,70 +201,74 @@ class GamePole:
 # print(s.is_out_pole(10))
 # print(s._all_coords)
 
-game = GamePole(100)
+game = GamePole(10)
 game.init()
-print(game._ships)
+# print(game._ships)
 # game.show()
 # game.move_ships()
 # print()
 # game.show()
 
-# ship = Ship(2)
-# ship = Ship(2, 1)
-# ship = Ship(3, 2, 0, 0)
+ship = Ship(2)
+ship = Ship(2, 1)
+ship = Ship(3, 2, 0, 0)
 
-# assert (
-#     ship._length == 3 and ship._tp == 2 and ship._x == 0 and ship._y == 0
-# ), "неверные значения атрибутов объекта класса Ship"
-# assert ship._cells == [1, 1, 1], "неверный список _cells"
-# assert ship._is_move, "неверное значение атрибута _is_move"
+assert (
+    ship._length == 3 and ship._tp == 2 and ship._x == 0 and ship._y == 0
+), "неверные значения атрибутов объекта класса Ship"
+assert ship._cells == [1, 1, 1], "неверный список _cells"
+assert ship._is_move, "неверное значение атрибута _is_move"
 
-# ship.set_start_coords(1, 2)
-# assert (
-#     ship._x == 1 and ship._y == 2
-# ), "неверно отработал метод set_start_coords()"
-# assert ship.get_start_coords() == (
-#     1,
-#     2,
-# ), "неверно отработал метод get_start_coords()"
+ship.set_start_coords(1, 2)
+assert (
+    ship._x == 1 and ship._y == 2
+), "неверно отработал метод set_start_coords()"
+assert ship.get_start_coords() == (
+    1,
+    2,
+), "неверно отработал метод get_start_coords()"
 
-# ship.move(1)
-# s1 = Ship(4, 1, 0, 0)
-# s2 = Ship(3, 2, 0, 0)
-# s3 = Ship(3, 2, 0, 2)
-# # print(s1._all_coords, s3._all_coords, sep='\n')
-# assert s1.is_collide(
-#     s2
-# ), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 0, 0)"
-# assert (
-#     s1.is_collide(s3) == False
-# ), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 0, 2)"
+ship.move(1)
+s1 = Ship(4, 1, 0, 0)
+s2 = Ship(3, 2, 0, 0)
+s3 = Ship(3, 2, 0, 2)
+# print(s1._all_coords, s3._all_coords, sep='\n')
+assert s1.is_collide(
+    s2
+), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 0, 0)"
+assert (
+    s1.is_collide(s3) == False
+), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 0, 2)"
 
-# s2 = Ship(3, 2, 1, 1)
-# assert s1.is_collide(
-#     s2
-# ), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 1, 1)"
+s2 = Ship(3, 2, 1, 1)
+assert s1.is_collide(
+    s2
+), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 1, 1)"
 
-# s2 = Ship(3, 1, 8, 1)
-# assert s2.is_out_pole(
-#     10
-# ), "неверно работает метод is_out_pole() для корабля Ship(3, 1, 8, 1)"
+s2 = Ship(3, 1, 8, 1)
+assert s2.is_out_pole(
+    10
+), "неверно работает метод is_out_pole() для корабля Ship(3, 1, 8, 1)"
 
-# s2 = Ship(3, 2, 1, 5)
-# assert (
-#     s2.is_out_pole(10) == False
-# ), "неверно работает метод is_out_pole(10) для корабля Ship(3, 2, 1, 5)"
+s2 = Ship(3, 2, 1, 5)
+assert (
+    s2.is_out_pole(10) == False
+), "неверно работает метод is_out_pole(10) для корабля Ship(3, 2, 1, 5)"
 
-# s2[0] = 2
-# assert s2[0] == 2, "неверно работает обращение ship[indx]"
+s2[0] = 2
+assert s2[0] == 2, "неверно работает обращение ship[indx]"
 
-# # p = GamePole(10)
-# # p.init()
-# # for nn in range(5):
-# #     for s in p._ships:
-# #         assert s.is_out_pole(10) == False, "корабли выходят за пределы игрового поля"
+p = GamePole(10)
+p.init()
+for nn in range(5):
+    for s in p._ships:
+        assert (
+            s.is_out_pole(10) == False
+        ), "корабли выходят за пределы игрового поля"
 
-# #         for ship in p.get_ships():
-# #             if s != ship:
-# #                 assert s.is_collide(ship) == False, "корабли на игровом поле соприкасаются"
-# #     p.move_ships()
+        for ship in p._ships:
+            if s != ship:
+                assert (
+                    s.is_collide(ship) == False
+                ), "корабли на игровом поле соприкасаются"
+    p.move_ships()
