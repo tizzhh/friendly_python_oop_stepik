@@ -1,6 +1,16 @@
 from random import choice, randint
 from typing import Callable, List, Set, Tuple
 
+WHITE_SQUARE = '\u2B1C'
+RED_SQUARE = u'\U0001F7E5'
+GREEN_SQUARE = u'\U0001F7E9'
+BLUE_SQUARE = u'\U0001F7E6'
+BLACK_SQUARE = u"\u2B1B"
+
+
+def generate_random_coorinates(size: int) -> Tuple[int]:
+    return (randint(0, size - 1), randint(0, size - 1))
+
 
 class Ship:
     WATER = 0
@@ -11,13 +21,19 @@ class Ship:
     TP_Y_COORD = 2
 
     def __init__(
-        self, length: int, tp: int = TP_X_COORD, x: int = None, y: int = None
+        self,
+        length: int,
+        tp: int = TP_X_COORD,
+        x: int = None,
+        y: int = None,
+        hidden: bool = False,
     ) -> None:
         self._length = length
         self._tp = tp
         self._x = x
         self._y = y
         self._is_move = True
+        self._hidden = hidden
         self._cells = [self.NOT_HIT for _ in range(length)]
         self._ship_cords = self._get_ship_coords()
         self._all_coords = self._get_all_coords()
@@ -86,6 +102,14 @@ class Ship:
             )
         )
 
+    @property
+    def ship_coords(self) -> List[Tuple[int]]:
+        return self._ship_cords
+
+    @property
+    def cells(self) -> List[int]:
+        return self._cells
+
     def _get_all_coords(self) -> Set[Tuple[int]]:
         res = set()
         if self._x is not None and self._y is not None:
@@ -121,37 +145,43 @@ class GamePole:
         SINGLE_DECK: 4,
     }
 
-    CELLS = {
-        Ship.WATER: '\u2B1C',
-        Ship.NOT_HIT: u'\U0001F7E9',
-        Ship.HIT: u"\U0001F7E5",
-    }
-
-    def __init__(self, size: int) -> None:
-        self._sixe = size
+    def __init__(self, size: int, color: str = GREEN_SQUARE) -> None:
+        self._size = size
         self._ships: List[Ship] = []
+        self.CELLS = {
+            Ship.WATER: WHITE_SQUARE,
+            Ship.NOT_HIT: color,
+            Ship.HIT: RED_SQUARE,
+        }
+        self.CELLS[Ship.NOT_HIT] = color
 
-    def init(self) -> None:
+    def __bool__(self) -> bool:
+        return all(not ship._is_move for ship in self._ships)
+
+    def is_game_over(self) -> bool:
+        return bool(self)
+
+    def init(self, hidden=False) -> None:
         for deck, quantity in self.DECKS_QUANTITY.items():
             for _ in range(quantity):
                 self._ships.append(
-                    Ship(deck, tp=choice([Ship.TP_X_COORD, Ship.TP_Y_COORD]))
+                    Ship(
+                        deck,
+                        tp=choice([Ship.TP_X_COORD, Ship.TP_Y_COORD]),
+                        hidden=hidden,
+                    )
                 )
 
         set_coords = []
         for ship in self._ships:
             does_collide = True
             while does_collide:
-                new_x, new_y = randint(0, self._sixe - 1), randint(
-                    0, self._sixe - 1
-                )
+                new_x, new_y = generate_random_coorinates(self._size)
                 while (new_x, new_y) in set_coords:
-                    new_x, new_y = randint(0, self._sixe - 1), randint(
-                        0, self._sixe - 1
-                    )
+                    new_x, new_y = generate_random_coorinates(self._size)
                 ship.set_start_coords(new_x, new_y)
                 does_collide = any(
-                    ship.is_collide(other_ship) or ship.is_out_pole(self._sixe)
+                    ship.is_collide(other_ship) or ship.is_out_pole(self._size)
                     for other_ship in self._ships
                 )
                 if not does_collide:
@@ -159,19 +189,23 @@ class GamePole:
 
         self._pole = self._get_grid()
 
+    @property
+    def ships(self) -> List[Ship]:
+        return self._ships
+
     def move_ships(self) -> None:
         for ship in self._ships:
             step = choice([-1, 1])
             ship.move(step)
             if any(
-                ship.is_collide(other_ship) or ship.is_out_pole(self._sixe)
+                ship.is_collide(other_ship) or ship.is_out_pole(self._size)
                 for other_ship in self._ships
             ):
                 ship.move(step)
                 step = -step
                 ship.move(step)
                 if any(
-                    ship.is_collide(other_ship) or ship.is_out_pole(self._sixe)
+                    ship.is_collide(other_ship) or ship.is_out_pole(self._size)
                     for other_ship in self._ships
                 ):
                     ship.move(step)
@@ -179,6 +213,7 @@ class GamePole:
         self._pole = self._get_grid()
 
     def show(self) -> None:
+        self._pole = self._get_grid()
         for row in self._pole:
             for cell in row:
                 print(self.CELLS[cell], end='')
@@ -186,89 +221,80 @@ class GamePole:
 
     def _get_grid(self) -> List[List[int]]:
         grid = [
-            [Ship.WATER for _ in range(self._sixe)] for _ in range(self._sixe)
+            [Ship.WATER for _ in range(self._size)] for _ in range(self._size)
         ]
         for ship in self._ships:
             for elem in zip(ship._cells, ship._ship_cords):
                 cell_status = elem[0]
                 x, y = elem[1][0], elem[1][1]
-                grid[x][y] = cell_status
+                grid[x][y] = cell_status if not ship._hidden else Ship.WATER
 
         return grid
 
 
-# s = Ship(4, Ship.TP_X_COORD, 5, 5)
-# print(s.is_out_pole(10))
-# print(s._all_coords)
+class SeaBattle:
+    def __init__(self, size: int) -> None:
+        self.player = GamePole(size)
+        self.enemy = GamePole(size, color=BLUE_SQUARE)
+        self._size = size
+        self.start()
 
-game = GamePole(10)
-game.init()
-# print(game._ships)
-# game.show()
-# game.move_ships()
-# print()
-# game.show()
+    def __bool__(self) -> bool:
+        return not self.player.is_game_over() and not self.enemy.is_game_over()
 
-ship = Ship(2)
-ship = Ship(2, 1)
-ship = Ship(3, 2, 0, 0)
+    def show(self) -> None:
+        print("\033[H\033[J", end="")
+        print('You:')
+        self.player.show()
+        print(BLACK_SQUARE * self._size)
+        print('Enemy:')
+        self.enemy.show()
 
-assert (
-    ship._length == 3 and ship._tp == 2 and ship._x == 0 and ship._y == 0
-), "неверные значения атрибутов объекта класса Ship"
-assert ship._cells == [1, 1, 1], "неверный список _cells"
-assert ship._is_move, "неверное значение атрибута _is_move"
+    def move(self) -> None:
+        self.player.move_ships()
+        self.enemy.move_ships()
 
-ship.set_start_coords(1, 2)
-assert (
-    ship._x == 1 and ship._y == 2
-), "неверно отработал метод set_start_coords()"
-assert ship.get_start_coords() == (
-    1,
-    2,
-), "неверно отработал метод get_start_coords()"
+    def check_who_won(self) -> None:
+        if self.player.is_game_over():
+            print('Computer wins!')
+        elif self.enemy.is_game_over():
+            print('Player wins!')
 
-ship.move(1)
-s1 = Ship(4, 1, 0, 0)
-s2 = Ship(3, 2, 0, 0)
-s3 = Ship(3, 2, 0, 2)
-# print(s1._all_coords, s3._all_coords, sep='\n')
-assert s1.is_collide(
-    s2
-), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 0, 0)"
-assert (
-    s1.is_collide(s3) == False
-), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 0, 2)"
+    def start(self) -> None:
+        self.player.init()
+        self.enemy.init(hidden=True)
 
-s2 = Ship(3, 2, 1, 1)
-assert s1.is_collide(
-    s2
-), "неверно работает метод is_collide() для кораблей Ship(4, 1, 0, 0) и Ship(3, 2, 1, 1)"
+    def user_turn(self) -> None:
+        inp = input('Input enemy coordinates: ').split()
+        try:
+            x, y = map(int, inp)
+        except ValueError:
+            raise ValueError('Coordinates should be int and only 2')
+        coord = (x, y)
+        for ship in self.enemy.ships:
+            if coord in ship.ship_coords:
+                ship.cells[ship.ship_coords.index(coord)] = Ship.HIT
+                ship._is_move = False
+                ship._hidden = False
+                print('Hit!')
+                return
+        print("You've missed!")
 
-s2 = Ship(3, 1, 8, 1)
-assert s2.is_out_pole(
-    10
-), "неверно работает метод is_out_pole() для корабля Ship(3, 1, 8, 1)"
+    def computer_turn(self) -> None:
+        coord = generate_random_coorinates(self.enemy._size)
+        for ship in self.player.ships:
+            if coord in ship.ship_coords:
+                ship.cells[ship.ship_coords.index(coord)] = Ship.HIT
+                return
+        print("Computer missed")
 
-s2 = Ship(3, 2, 1, 5)
-assert (
-    s2.is_out_pole(10) == False
-), "неверно работает метод is_out_pole(10) для корабля Ship(3, 2, 1, 5)"
 
-s2[0] = 2
-assert s2[0] == 2, "неверно работает обращение ship[indx]"
+battleship = SeaBattle(10)
+while battleship:
+    battleship.show()
+    battleship.user_turn()
+    battleship.computer_turn()
+    battleship.move()
+    battleship.show()
 
-p = GamePole(10)
-p.init()
-for nn in range(5):
-    for s in p._ships:
-        assert (
-            s.is_out_pole(10) == False
-        ), "корабли выходят за пределы игрового поля"
-
-        for ship in p._ships:
-            if s != ship:
-                assert (
-                    s.is_collide(ship) == False
-                ), "корабли на игровом поле соприкасаются"
-    p.move_ships()
+battleship.check_who_won()
